@@ -49,7 +49,7 @@ export function PageHeader({
                 separator: 'text-default-300',
               }}
             >
-              <BreadcrumbItem href="/">conflow</BreadcrumbItem>
+              <BreadcrumbItem href="/">nestplate</BreadcrumbItem>
               {breadcrumbs.map((item, index) => (
                 <BreadcrumbItem
                   key={index}
