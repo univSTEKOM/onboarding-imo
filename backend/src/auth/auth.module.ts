@@ -15,6 +15,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { BlacklistedToken } from './entities/blacklisted-token.entity';
 import { PasswordResetToken } from './entities/password-reset-token.entity';
 import { EmailVerificationToken } from './entities/email-verification-token.entity';
+import { RevokedSsoSession } from './entities/revoked-sso-session.entity';
 import { CsrfMiddleware } from './csrf.middleware';
 
 import { IsUniqueConstraint } from '../common/validators/is-unique.validator';
@@ -28,6 +29,7 @@ import { TurnstileService } from './turnstile.service';
       BlacklistedToken,
       PasswordResetToken,
       EmailVerificationToken,
+      RevokedSsoSession,
     ]),
     JwtModule.registerAsync({
       imports: [ConfigModule],

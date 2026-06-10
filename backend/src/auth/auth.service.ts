@@ -14,6 +14,7 @@ import { IsNull, Repository } from 'typeorm';
 import { BlacklistedToken } from './entities/blacklisted-token.entity';
 import { PasswordResetToken } from './entities/password-reset-token.entity';
 import { EmailVerificationToken } from './entities/email-verification-token.entity';
+import { RevokedSsoSession } from './entities/revoked-sso-session.entity';
 import { ConfigService } from '@nestjs/config';
 import { OAuth2Client } from 'google-auth-library';
 import { MailService } from '../mail/mail.service';
@@ -34,6 +35,8 @@ export class AuthService {
     private resetTokenRepository: Repository<PasswordResetToken>,
     @InjectRepository(EmailVerificationToken)
     private verificationTokenRepository: Repository<EmailVerificationToken>,
+    @InjectRepository(RevokedSsoSession)
+    private revokedSsoSessionRepository: Repository<RevokedSsoSession>,
     private configService: ConfigService,
     private mailService: MailService,
   ) {
@@ -124,7 +127,9 @@ export class AuthService {
     }
   }
 
-  login(user: Omit<User, 'password'>) {
+  // `sid` is the OIDC session id, passed only for SSO logins so the session can
+  // be revoked on back-channel logout.
+  login(user: Omit<User, 'password'>, sid?: string) {
     const permissions = new Set<string>();
     user.permissions?.forEach((p) => permissions.add(p.name));
     user.roles?.forEach((r) => {
@@ -137,11 +142,25 @@ export class AuthService {
       roles: user.roles?.map((r) => r.name) || [],
       permissions: Array.from(permissions),
       emailVerified: !!user.emailVerifiedAt,
+      ...(sid ? { sid } : {}),
     };
     return {
       access_token: this.jwtService.sign(payload),
       refresh_token: this.jwtService.sign(payload, { expiresIn: '7d' }),
     };
+  }
+
+  async revokeSession(sid: string, sub?: string | null): Promise<void> {
+    const existing = await this.revokedSsoSessionRepository.findOneBy({ sid });
+    if (existing) return;
+    await this.revokedSsoSessionRepository.save(
+      this.revokedSsoSessionRepository.create({ sid, sub: sub ?? null }),
+    );
+  }
+
+  async isSessionRevoked(sid: string): Promise<boolean> {
+    const found = await this.revokedSsoSessionRepository.findOneBy({ sid });
+    return !!found;
   }
 
   async blacklistToken(token: string) {
@@ -157,35 +176,42 @@ export class AuthService {
   }
 
   async refresh(refreshToken: string) {
+    let payload: JwtPayload;
     try {
-      const payload = this.jwtService.verify<JwtPayload>(refreshToken);
-      const user = await this.usersService.findOne(payload.sub);
-
-      if (!user) {
-        throw new UnauthorizedException('User no longer exists');
-      }
-
-      const permissions = new Set<string>();
-      user.permissions?.forEach((p) => permissions.add(p.name));
-      user.roles?.forEach((r) => {
-        r.permissions?.forEach((p) => permissions.add(p.name));
-      });
-
-      const newPayload: JwtPayload = {
-        email: user.email,
-        sub: user.id,
-        roles: user.roles?.map((r) => r.name) || [],
-        permissions: Array.from(permissions),
-        emailVerified: !!user.emailVerifiedAt,
-      };
-
-      return {
-        access_token: this.jwtService.sign(newPayload),
-        refresh_token: this.jwtService.sign(newPayload, { expiresIn: '7d' }),
-      };
+      payload = this.jwtService.verify<JwtPayload>(refreshToken);
     } catch {
       throw new UnauthorizedException('Invalid or expired refresh token');
     }
+
+    // An SSO session that has been revoked (back-channel logout) can't be refreshed.
+    if (payload.sid && (await this.isSessionRevoked(payload.sid))) {
+      throw new UnauthorizedException('Session has been revoked');
+    }
+
+    const user = await this.usersService.findOne(payload.sub);
+    if (!user) {
+      throw new UnauthorizedException('User no longer exists');
+    }
+
+    const permissions = new Set<string>();
+    user.permissions?.forEach((p) => permissions.add(p.name));
+    user.roles?.forEach((r) => {
+      r.permissions?.forEach((p) => permissions.add(p.name));
+    });
+
+    const newPayload: JwtPayload = {
+      email: user.email,
+      sub: user.id,
+      roles: user.roles?.map((r) => r.name) || [],
+      permissions: Array.from(permissions),
+      emailVerified: !!user.emailVerifiedAt,
+      ...(payload.sid ? { sid: payload.sid } : {}),
+    };
+
+    return {
+      access_token: this.jwtService.sign(newPayload),
+      refresh_token: this.jwtService.sign(newPayload, { expiresIn: '7d' }),
+    };
   }
 
   async getProfile(userId: number) {

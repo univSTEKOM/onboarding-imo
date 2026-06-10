@@ -8,7 +8,7 @@ Read this before making changes. It is the top-level rulebook; the per-side guid
 A full-stack starter template:
 
 - **`backend/`** — NestJS 11 API running on **Bun**, persisting to PostgreSQL via TypeORM.
-  JWT + Google OAuth auth, RBAC, a generic `BaseService<T>` CRUD layer, S3 media, Mailgun
+  JWT + Google OAuth + OIDC SSO auth, RBAC, a generic `BaseService<T>` CRUD layer, S3 media, Mailgun
   email, Socket.IO notifications, caching, rate limiting, health checks.
 - **`frontend/`** — React 19 SPA on Vite + TanStack Router, HeroUI + Tailwind 4, Zustand +
   react-query state, PWA support.

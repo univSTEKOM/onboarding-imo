@@ -17,6 +17,8 @@ export interface DecodedToken {
   roles: Array<string>
   permissions: Array<string>
   emailVerified: boolean
+  // OIDC session id — present only when the session was minted via SSO login.
+  sid?: string
   iat: number
   exp: number
 }

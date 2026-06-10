@@ -87,6 +87,13 @@ will not boot without them.
 | | `REDIS_PASSWORD` | no | — (Redis `requirepass` / ACL) |
 | **OAuth / CAPTCHA** | `GOOGLE_CLIENT_ID` | no | — (enables Google login) |
 | | `TURNSTILE_SECRET` | no | — (enables the login CAPTCHA) |
+| **SSO / OIDC** (optional) | `SSO_ISSUER` | no | — (omit → SSO disabled; e.g. `https://passport.stekom.ac.id/oidc`) |
+| | `SSO_CLIENT_ID` | no | — (confidential client id) |
+| | `SSO_CLIENT_SECRET` | no | — (confidential client secret) |
+| | `SSO_REDIRECT_URI` | no | — (e.g. `http://localhost:3001/api/auth/sso/callback`) |
+| | `SSO_POST_LOGOUT_URI` | no | — (where the IdP returns after logout) |
+| | `SSO_SUCCESS_REDIRECT` | no | `/` (SPA path to land on after login) |
+| | `SSO_DEFAULT_ROLE` | no | `user` (role granted to auto-provisioned SSO users) |
 | **Mail** (optional) | `MAILGUN_API_KEY` | no | — |
 | | `MAILGUN_DOMAIN` | no | — |
 | | `MAILGUN_FROM` | no | `no-reply@example.com` |

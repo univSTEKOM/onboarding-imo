@@ -11,6 +11,7 @@ import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
 import { InvitationsModule } from './invitations/invitations.module';
 import { AuthModule } from './auth/auth.module';
+import { SsoModule } from './sso/sso.module';
 import { RolesModule } from './roles/roles.module';
 import { PermissionsModule } from './permissions/permissions.module';
 import { MediaModule } from './media/media.module';
@@ -120,6 +121,7 @@ const initLogger = pino({ name: 'AppModule' });
     UsersModule,
     InvitationsModule,
     AuthModule,
+    SsoModule,
     RolesModule,
     PermissionsModule,
     MediaModule,

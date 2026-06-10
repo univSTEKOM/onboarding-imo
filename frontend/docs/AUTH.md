@@ -26,7 +26,8 @@ Selectors: `hasRole`, `hasPermission`, `hasAnyPermission`, `hasAllPermissions`.
 > `navigate({ to: '/' })` on success for both email and Google flows.
 
 `logout()` calls the service (which clears cookies and redirects to `/login`) then
-`syncAuth()`.
+`syncAuth()`. For **SSO sessions** (the decoded token carries a `sid`), the service instead
+redirects to `/api/auth/sso/logout` so the IdP session is ended too (RP-initiated logout).
 
 ## Accessing auth in components
 
@@ -78,6 +79,12 @@ The sidebar (`useSidebarLogic` in `use-sidebar.ts`) filters `sidebarData` by bot
 2. On submit → `auth.store.login()` → `auth.service.login()` sets the cookie → `syncAuth()`.
 3. On success the hook navigates to `/` and toasts; on failure it resets Turnstile and
    toasts. A persisted `auth_error` in `sessionStorage` is surfaced on next mount.
+
+**SSO login** is a plain full-page link, not a store action: the "Sign in with Stekom SSO"
+button on the login page points at `<a href="/api/auth/sso/login">`. The backend runs the
+OIDC flow, sets the same session cookies, and redirects back into the SPA — `auth.store`
+hydrates from the `access_token` cookie on load, so no client-side token handling is needed.
+Enabled when the backend has `SSO_ISSUER` configured.
 
 ## Email verification gate
 

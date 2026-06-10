@@ -37,6 +37,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     if (token && (await this.authService.isTokenBlacklisted(token))) {
       throw new UnauthorizedException('Token is invalidated');
     }
+
+    // SSO sessions ended via back-channel logout are revoked by their sid.
+    if (payload.sid && (await this.authService.isSessionRevoked(payload.sid))) {
+      throw new UnauthorizedException('Session has been revoked');
+    }
+
     const user = await this.authService.getProfile(payload.sub);
     if (!user) {
       throw new UnauthorizedException('User not found');

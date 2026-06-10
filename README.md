@@ -15,7 +15,7 @@ dashboard — ready to clone and extend.
 
 | Feature | Details |
 |---|---|
-| **Authentication** | JWT (access + refresh), Google OAuth, Cloudflare Turnstile CAPTCHA, token blacklisting |
+| **Authentication** | JWT (access + refresh), Google OAuth, OIDC SSO (auth-code + PKCE, back-channel logout), Cloudflare Turnstile CAPTCHA, token blacklisting |
 | **Email Verification** | Token-based flow (24h expiry) on registration; enforced server-side via `JwtAuthGuard` and gated client-side |
 | **Invitations** | Invite-only onboarding — admins email an invite link; the invitee sets their own password (auto-verified) |
 | **CSRF Protection** | Double-submit cookie pattern on `refresh` and `logout` |

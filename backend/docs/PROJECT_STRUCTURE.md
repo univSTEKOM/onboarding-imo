@@ -27,8 +27,12 @@ src/
     csrf.middleware.ts    #   CSRF check on /auth/refresh + /auth/logout
     turnstile.service.ts  #   Cloudflare Turnstile CAPTCHA verification
     dto/                  #   login, google-login, forgot/reset-password, resend-verification
-    entities/             #   blacklisted-token, password-reset-token, email-verification-token
+    entities/             #   blacklisted-token, password-reset-token, email-verification-token, revoked-sso-session
     interfaces/           #   jwt-payload, auth-request
+
+  sso/                    # OIDC single sign-on (confidential client)
+    sso.controller.ts     #   /auth/sso/* (login, callback, logout, backchannel-logout)
+    sso.service.ts        #   openid-client discovery/PKCE/exchange, user provisioning, logout_token verify
 
   users/  roles/  permissions/  invitations/  media/  notifications/
     <feature>.module.ts

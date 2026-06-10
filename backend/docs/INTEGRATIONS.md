@@ -91,6 +91,21 @@ Two usage patterns (both in [REQUEST_LIFECYCLE.md](./REQUEST_LIFECYCLE.md)):
 Redis `SCAN` + `del` loop when a Redis client is present, and a `keys`/`del` fallback for the
 memory store. The pattern convention is `'*/users*'`, `'*/roles*'`, `'*/media*'`, etc.
 
+## SSO / OIDC provider
+
+`SsoModule` (`src/sso/`) talks to an external **OpenID Connect provider** (e.g.
+`passport.stekom.ac.id`) as a confidential client, using `openid-client` for the flow and
+`jose` to verify back-channel `logout_token`s. It's **optional**: with `SSO_ISSUER` unset,
+`SsoService.onModuleInit` skips discovery and the routes report unavailable.
+
+- **Discovery** runs once at boot (`client.discovery`, cached); a failure is logged and
+  leaves SSO disabled rather than crashing the app.
+- **Server-to-server calls** (discovery, token, JWKS) hit the IdP's `/oidc/*` machine
+  endpoints. Behind Cloudflare Bot Fight Mode / a Managed Challenge these get a `403`
+  challenge page — add a WAF **skip** for `/oidc/*`.
+- The full login/logout/provisioning/revocation flow and its env vars are documented in
+  [AUTH.md](./AUTH.md#sso-oidc-single-sign-on).
+
 ## Health
 
 `HealthController` (`src/health/health.controller.ts`) exposes `GET /api/health` using

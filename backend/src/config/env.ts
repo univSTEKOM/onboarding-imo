@@ -41,6 +41,15 @@ export const envSchema = z.object({
   GOOGLE_CLIENT_ID: z.string().optional(),
   TURNSTILE_SECRET: z.string().optional(),
 
+  // SSO / OIDC (optional — enables "Sign in with SSO"). Omit SSO_ISSUER to disable.
+  SSO_ISSUER: z.string().url().optional(),
+  SSO_CLIENT_ID: z.string().optional(),
+  SSO_CLIENT_SECRET: z.string().optional(),
+  SSO_REDIRECT_URI: z.string().url().optional(),
+  SSO_POST_LOGOUT_URI: z.string().url().optional(),
+  SSO_SUCCESS_REDIRECT: z.string().default('/'),
+  SSO_DEFAULT_ROLE: z.string().default('user'),
+
   // Mail (optional)
   MAILGUN_API_KEY: z.string().optional(),
   MAILGUN_DOMAIN: z.string().optional(),

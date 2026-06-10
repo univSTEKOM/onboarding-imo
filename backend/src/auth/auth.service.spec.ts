@@ -15,6 +15,7 @@ import { MailService } from '../mail/mail.service';
 import { BlacklistedToken } from './entities/blacklisted-token.entity';
 import { PasswordResetToken } from './entities/password-reset-token.entity';
 import { EmailVerificationToken } from './entities/email-verification-token.entity';
+import { RevokedSsoSession } from './entities/revoked-sso-session.entity';
 import { User } from '../users/entities/user.entity';
 
 describe('AuthService', () => {
@@ -44,6 +45,11 @@ describe('AuthService', () => {
     findOneBy: jest.Mock;
   };
   let blacklistRepository: {
+    create: jest.Mock;
+    save: jest.Mock;
+    findOneBy: jest.Mock;
+  };
+  let revokedSsoSessionRepository: {
     create: jest.Mock;
     save: jest.Mock;
     findOneBy: jest.Mock;
@@ -78,6 +84,11 @@ describe('AuthService', () => {
       save: jest.fn((e) => Promise.resolve(e)),
       findOneBy: jest.fn(),
     };
+    revokedSsoSessionRepository = {
+      create: jest.fn((dto) => dto),
+      save: jest.fn((e) => Promise.resolve(e)),
+      findOneBy: jest.fn(),
+    };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -98,6 +109,10 @@ describe('AuthService', () => {
         {
           provide: getRepositoryToken(EmailVerificationToken),
           useValue: verificationTokenRepository,
+        },
+        {
+          provide: getRepositoryToken(RevokedSsoSession),
+          useValue: revokedSsoSessionRepository,
         },
         {
           provide: ConfigService,

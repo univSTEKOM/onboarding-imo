@@ -1,6 +1,6 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
 import { Button, Card, CardBody, Divider, Input } from '@heroui/react'
-import { Eye, EyeOff, Lock, LogIn, User } from 'lucide-react'
+import { Building2, Eye, EyeOff, Lock, LogIn, User } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { HandwrittenArrow } from '@/components/ui/handwritten-arrow'
 import { TurnstileWidget } from '@/components/ui/turnstile-widget'
@@ -114,6 +114,19 @@ function LoginPage() {
               >
                 <span className="text-teal-600 font-medium">
                   Login with Google
+                </span>
+              </Button>
+
+              {/* SSO Login Button — full-page redirect into the OIDC flow */}
+              <Button
+                as="a"
+                href="/api/auth/sso/login"
+                variant="flat"
+                color="primary"
+                startContent={<Building2 className="w-5 h-5 text-teal-600" />}
+              >
+                <span className="text-teal-600 font-medium">
+                  Sign in with Stekom SSO
                 </span>
               </Button>
 

@@ -99,6 +99,15 @@ export async function getProfile(): Promise<UserProfile> {
  * Logout user - clear token and redirect
  */
 export async function logout(): Promise<void> {
+  // SSO-originated sessions carry a `sid`: end them via RP-initiated logout so
+  // the IdP session is closed too (the IdP then fires back-channel logout).
+  const decoded = getDecodedToken()
+  if (decoded?.sid) {
+    removeToken()
+    window.location.href = '/api/auth/sso/logout'
+    return
+  }
+
   try {
     await api.post(
       '/api/auth/logout',
@@ -126,6 +135,7 @@ export function getCurrentUser(): Omit<DecodedToken, 'iat' | 'exp'> | null {
     roles: decoded.roles ?? [],
     permissions: decoded.permissions ?? [],
     emailVerified: decoded.emailVerified ?? false,
+    sid: decoded.sid,
   }
 }
 
