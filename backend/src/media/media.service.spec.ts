@@ -8,16 +8,13 @@ import { describe, beforeEach, it, expect, jest } from 'bun:test';
 import { MediaService } from './media.service';
 import { Media } from './entities/media.entity';
 
-// Bun's `S3Client` is constructed inside the MediaService constructor. ES module
-// imports are hoisted, so `mock.module('bun', ...)` cannot reliably intercept it
-// here — instead we let the (harmless, network-free) constructor run and then
-// swap the private `s3Client` field for a fake before exercising any method.
-const mockS3File = {
-  write: jest.fn(),
-  arrayBuffer: jest.fn().mockResolvedValue(new ArrayBuffer(8)),
-};
-const mockS3Client = {
-  file: jest.fn(() => mockS3File),
+// The `DepotClient` is constructed inside the MediaService constructor. We let
+// the (network-free) constructor run, then swap the private `depot` field for a
+// fake before exercising any method.
+const mockDepot = {
+  upload: jest.fn(),
+  getUrl: jest.fn(),
+  delete: jest.fn(),
 };
 
 describe('MediaService', () => {
@@ -25,8 +22,9 @@ describe('MediaService', () => {
   let repository: Repository<Media>;
 
   beforeEach(async () => {
-    mockS3Client.file.mockClear();
-    mockS3File.write.mockClear();
+    mockDepot.upload.mockReset();
+    mockDepot.getUrl.mockReset();
+    mockDepot.delete.mockReset();
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -48,7 +46,8 @@ describe('MediaService', () => {
           provide: ConfigService,
           useValue: {
             get: jest.fn((key: string) => {
-              if (key === 'S3_BUCKET') return 'test-bucket';
+              if (key === 'DEPOT_BASE_URL') return 'https://depot.test';
+              if (key === 'DEPOT_API_KEY') return 'mk_test_key';
               if (key === 'APP_URL') return 'http://localhost:3000';
               return null;
             }),
@@ -60,8 +59,7 @@ describe('MediaService', () => {
 
     service = module.get<MediaService>(MediaService);
     repository = module.get<Repository<Media>>(getRepositoryToken(Media));
-    (service as unknown as { s3Client: typeof mockS3Client }).s3Client =
-      mockS3Client;
+    (service as unknown as { depot: typeof mockDepot }).depot = mockDepot;
   });
 
   it('should be defined', () => {
@@ -69,7 +67,7 @@ describe('MediaService', () => {
   });
 
   describe('uploadFile', () => {
-    it('should write to S3, persist the row and set a local view URL', async () => {
+    it('should upload via Depot, persist the row with depotFileId and set a local view URL', async () => {
       const file = {
         originalname: 'pic.png',
         mimetype: 'image/png',
@@ -77,12 +75,23 @@ describe('MediaService', () => {
         buffer: Buffer.from('bytes'),
       } as Express.Multer.File;
 
+      mockDepot.upload.mockResolvedValue({
+        id: 42,
+        s3Key: 'uploads/pic.png',
+      });
+
       const result = await service.uploadFile(file, 7);
 
-      expect(mockS3Client.file).toHaveBeenCalled();
-      expect(mockS3File.write).toHaveBeenCalledWith(file.buffer, {
-        type: 'image/png',
+      expect(mockDepot.upload).toHaveBeenCalledWith({
+        body: file.buffer,
+        name: 'pic.png',
+        mime: 'image/png',
+        size: 123,
+        ownerUserId: 7,
       });
+      expect(repository.create).toHaveBeenCalledWith(
+        expect.objectContaining({ depotFileId: 42, path: 'uploads/pic.png' }),
+      );
       expect(repository.save).toHaveBeenCalledTimes(2);
       expect(result.url).toBe('http://localhost:3000/api/media/1/view');
     });
@@ -95,16 +104,20 @@ describe('MediaService', () => {
     });
   });
 
-  describe('getFileStream', () => {
-    it('should resolve the S3 file handle for an existing media row', async () => {
+  describe('getSignedUrl', () => {
+    it('should resolve a Depot signed URL for an existing media row', async () => {
       (repository.findOne as jest.Mock).mockResolvedValue({
         id: 1,
-        path: 'uploads/pic.png',
+        depotFileId: 42,
+      });
+      mockDepot.getUrl.mockResolvedValue({
+        url: 'https://depot.test/signed/42',
       });
 
-      await service.getFileStream(1);
+      const url = await service.getSignedUrl(1);
 
-      expect(mockS3Client.file).toHaveBeenCalledWith('uploads/pic.png');
+      expect(mockDepot.getUrl).toHaveBeenCalledWith(42);
+      expect(url).toBe('https://depot.test/signed/42');
     });
   });
 

@@ -122,15 +122,14 @@ describe('Media (e2e)', () => {
   });
 
   describe('GET /media/:id/view (public)', () => {
-    it('streams the file bytes without authentication', async () => {
+    it('redirects to a Depot signed URL without authentication', async () => {
       const id = await uploadAs(admin);
 
       const res = await request(server)
         .get(`/api/media/${id}/view`)
-        .expect(200);
+        .expect(302);
 
-      expect(res.headers['content-type']).toContain('text/plain');
-      expect(res.text).toBe('fake-file-bytes');
+      expect(res.headers['location']).toContain('depot.test/signed/');
     });
   });
 

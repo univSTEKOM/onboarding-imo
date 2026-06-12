@@ -13,7 +13,7 @@ import { MediaService } from '@/media/media.service';
 import { NotificationsListener } from '@/notifications/notifications.listener';
 import {
   makeFakeMail,
-  makeFakeS3,
+  makeFakeDepot,
   fakeTurnstile,
   passThroughGuard,
   type FakeMailService,
@@ -59,10 +59,10 @@ export async function setupTestApp(): Promise<TestContext> {
 
   await app.init();
 
-  // The real MediaService keeps all DB-backed logic; only its S3 client is
-  // swapped so uploads / views never reach object storage.
+  // The real MediaService keeps all DB-backed logic; only its Depot client is
+  // swapped so uploads / views never reach Depot or object storage.
   const mediaService = app.get(MediaService);
-  (mediaService as unknown as { s3Client: unknown }).s3Client = makeFakeS3();
+  (mediaService as unknown as { depot: unknown }).depot = makeFakeDepot();
 
   const dataSource = app.get(DataSource);
 

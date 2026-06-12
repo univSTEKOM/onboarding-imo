@@ -28,15 +28,32 @@ export const passThroughGuard = {
 };
 
 /**
- * Fake Bun `S3Client`. `write` is a no-op and `arrayBuffer` returns fixed bytes
- * so upload / view / stream endpoints behave end-to-end without touching S3.
+ * Fake Depot `DepotClient`. `upload` returns a fake `MediaFile`, `getUrl` a
+ * fake signed URL, and `delete` is a no-op — so upload / view / stream / delete
+ * endpoints behave end-to-end without touching Depot or S3.
  */
-export function makeFakeS3() {
-  const bytes = new TextEncoder().encode('fake-file-bytes');
+export function makeFakeDepot() {
+  let nextId = 1;
   return {
-    file: () => ({
-      write: async (): Promise<number> => bytes.byteLength,
-      arrayBuffer: async (): Promise<ArrayBuffer> => bytes.buffer.slice(0),
+    upload: async (input: { name: string; mime: string; size?: number }) => ({
+      id: nextId++,
+      appId: 1,
+      folderId: null,
+      name: input.name,
+      s3Key: `uploads/${Date.now()}-${input.name}`,
+      contentHash: null,
+      mime: input.mime,
+      size: input.size ?? 0,
+      status: 'ready' as const,
+      ownerUserId: null,
+      tags: null,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     }),
+    getUrl: async (fileId: number) => ({
+      url: `https://depot.test/signed/${fileId}`,
+      expiresIn: 900,
+    }),
+    delete: async () => ({}),
   };
 }
