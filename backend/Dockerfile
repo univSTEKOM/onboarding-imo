@@ -33,6 +33,8 @@ ENV NODE_ENV=production
 COPY --from=builder /usr/src/app/node_modules ./node_modules
 COPY --from=builder /usr/src/app/dist ./dist
 COPY --from=builder /usr/src/app/package.json ./
+COPY --from=builder /usr/src/app/docker-entrypoint.sh ./
+RUN chmod +x ./docker-entrypoint.sh
 
-# Run the app
-ENTRYPOINT ["bun", "dist/main.js"]
+# Apply pending migrations, then run the app
+ENTRYPOINT ["./docker-entrypoint.sh"]

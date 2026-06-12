@@ -62,7 +62,8 @@ bun run spec:generate      # write swagger.json (OpenAPI spec for the frontend)
 `DB_SYNCHRONIZE` controls which strategy boots. When it is on (the default in
 non-production), TypeORM auto-syncs the schema to the entities — fast for local iteration.
 When it is off (the default in production), `synchronize` is disabled and **pending
-migrations run automatically on boot** (`migrationsRun`).
+migrations run automatically on boot** (`migrationsRun`); the Docker image's
+`docker-entrypoint.sh` also applies them via `migration:run:prod` before starting the API.
 
 Workflow after changing an entity: `bun run migration:generate
 src/database/migrations/<Name>`, review the generated SQL, commit it. The migration applies
