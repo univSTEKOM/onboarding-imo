@@ -1,5 +1,5 @@
 // TODO: Replace placeholder cards and chart with real data for your application.
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 import {
   Activity,
   BarChart2,
@@ -13,6 +13,7 @@ import { QuickLinkCard } from '@/components/features/dashboard/quick-link-card'
 import { ActivityChart } from '@/components/features/dashboard/activity-chart'
 import { StatCardSkeleton } from '@/components/templates/skeletons'
 import { useAuth, useProfile } from '@/hooks/use-auth'
+import { isAuthenticated } from '@/lib/utils/cookies'
 
 const PLACEHOLDER_DATA = [
   { label: 'Mon', value: 12 },
@@ -25,6 +26,11 @@ const PLACEHOLDER_DATA = [
 ]
 
 export const Route = createFileRoute('/')({
+  beforeLoad: () => {
+    if (!isAuthenticated()) {
+      throw redirect({ to: '/login' })
+    }
+  },
   component: Dashboard,
 })
 
