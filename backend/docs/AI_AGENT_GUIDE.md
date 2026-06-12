@@ -86,7 +86,7 @@ Full map: [PROJECT_STRUCTURE.md](./PROJECT_STRUCTURE.md). New-feature recipe:
 - **Add a query / business rule** → a method on the feature service. [DATA_LAYER.md](./DATA_LAYER.md).
 - **Send a notification** → emit an event + `@OnEvent` handler. [EVENTS_AND_REALTIME.md](./EVENTS_AND_REALTIME.md).
 - **Add an env var** → `config/env.ts` (+ the README table).
-- **Touch S3 / mail / cache / health** → [INTEGRATIONS.md](./INTEGRATIONS.md).
+- **Touch Depot media / mail / cache / health** → [INTEGRATIONS.md](./INTEGRATIONS.md).
 
 ## Safe-change checklist
 

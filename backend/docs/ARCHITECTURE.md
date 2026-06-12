@@ -32,7 +32,7 @@ service reach into the notifications gateway, is the most common mistake.
 | Rate limiting | `@nestjs/throttler` (global guard) |
 | Logging | `nestjs-pino` (structured, request-scoped) |
 | Mail | `mailgun.js` |
-| File storage | Bun's native `S3Client` (S3-compatible) |
+| File storage | Depot media service (`@univstekom/depot-sdk`) |
 | Health | `@nestjs/terminus` |
 | API docs | `@nestjs/swagger` (OpenAPI) |
 | Tests | `bun:test` + `supertest` |
@@ -184,6 +184,6 @@ because Swagger introspects routes.
 - [REQUEST_LIFECYCLE.md](./REQUEST_LIFECYCLE.md) — the controller/HTTP layer.
 - [AUTH.md](./AUTH.md) — tokens, guards, RBAC.
 - [EVENTS_AND_REALTIME.md](./EVENTS_AND_REALTIME.md) — events + WebSocket notifications.
-- [INTEGRATIONS.md](./INTEGRATIONS.md) — S3, mail, cache, health.
+- [INTEGRATIONS.md](./INTEGRATIONS.md) — Depot media, mail, cache, health.
 - [ADDING_FEATURES.md](./ADDING_FEATURES.md) — the end-to-end recipe.
 - [AI_AGENT_GUIDE.md](./AI_AGENT_GUIDE.md) — rules for AI agents.

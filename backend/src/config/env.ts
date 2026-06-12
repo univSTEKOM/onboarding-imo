@@ -23,12 +23,9 @@ export const envSchema = z.object({
   ADMIN_EMAIL: z.string().email(),
   ADMIN_PASSWORD: z.string().min(8),
 
-  // S3 (required)
-  S3_ENDPOINT: z.string().url(),
-  S3_REGION: z.string().min(1),
-  S3_BUCKET: z.string().min(1),
-  S3_ACCESS_KEY_ID: z.string().min(1),
-  S3_SECRET_ACCESS_KEY: z.string().min(1),
+  // Depot media service (required)
+  DEPOT_BASE_URL: z.string().url(),
+  DEPOT_API_KEY: z.string().min(1),
 
   // Redis (optional)
   REDIS_HOST: z.string().optional(),

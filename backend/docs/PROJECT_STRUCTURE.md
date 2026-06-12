@@ -78,7 +78,7 @@ test/
                           #   invitations, notifications, health) + app.e2e.spec.ts
   utils/
     setup-env.ts          # bun preload: pins the test DB + silences logs (see bunfig.toml)
-    setup-app.ts          # boots the full app with fakes (mail, S3, turnstile, throttler)
+    setup-app.ts          # boots the full app with fakes (mail, Depot, turnstile, throttler)
     auth.ts               # adminToken(), tokenFor(), createUser(), loginViaHttp()
     db-clean.ts           # cleanDatabase() — resets volatile rows, preserves seeded admin
     fakes.ts              # deterministic fakes for external services

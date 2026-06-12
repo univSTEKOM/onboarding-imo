@@ -144,7 +144,7 @@ findAll(@Query() params: PaginationParamsDto) {
   ```
 
   Endpoints that take a form body but no file use `@UseInterceptors(NoFilesInterceptor())`.
-  See [INTEGRATIONS.md](./INTEGRATIONS.md) for the S3 side.
+  See [INTEGRATIONS.md](./INTEGRATIONS.md) for the Depot storage side.
 
 ## Caching
 

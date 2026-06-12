@@ -3,7 +3,7 @@
 The backend of **Nestplate**, a starter template pairing a **NestJS 11** API with a
 **React 19 + TanStack Router** SPA. The API runs on **Bun**, persists to **PostgreSQL**
 via **TypeORM**, and ships with JWT + Google OAuth auth, a role/permission system (RBAC),
-a generic CRUD service, S3 media uploads, Mailgun email, real-time notifications over a
+a generic CRUD service, Depot media uploads, Mailgun email, real-time notifications over a
 Socket.IO gateway, caching, rate limiting, and health checks.
 
 These docs are written for **both human developers and AI agents** continuing the project.
@@ -19,7 +19,7 @@ Start with [ARCHITECTURE.md](./ARCHITECTURE.md), then read the doc that matches 
 | [REQUEST_LIFECYCLE.md](./REQUEST_LIFECYCLE.md) | Add or change an endpoint: the controller layer, guards, validation, caching, throttling, errors, Swagger. |
 | [AUTH.md](./AUTH.md) | Work with login, tokens, the email-verification gate, the guard chain, or RBAC/permission checks. |
 | [EVENTS_AND_REALTIME.md](./EVENTS_AND_REALTIME.md) | Emit a domain event, react to one, or push a real-time notification over WebSocket. |
-| [INTEGRATIONS.md](./INTEGRATIONS.md) | Work with the external edges: S3 media, Mailgun email, the Redis/in-memory cache, health checks. |
+| [INTEGRATIONS.md](./INTEGRATIONS.md) | Work with the external edges: Depot media, Mailgun email, the Redis/in-memory cache, health checks. |
 | [ADDING_FEATURES.md](./ADDING_FEATURES.md) | Build a new CRUD feature end-to-end. Copy-paste skeletons. |
 | [AI_AGENT_GUIDE.md](./AI_AGENT_GUIDE.md) | You are an AI agent: conventions, do/don't, and a safe-change checklist. |
 
@@ -92,11 +92,8 @@ will not boot without them.
 | **JWT** | `JWT_SECRET` | **yes** | — (min 16 chars; access token lifetime 60m) |
 | **Admin seed** | `ADMIN_EMAIL` | **yes** | — |
 | | `ADMIN_PASSWORD` | **yes** | — (min 8 chars) |
-| **S3** | `S3_ENDPOINT` | **yes** | — |
-| | `S3_REGION` | **yes** | — |
-| | `S3_BUCKET` | **yes** | — |
-| | `S3_ACCESS_KEY_ID` | **yes** | — |
-| | `S3_SECRET_ACCESS_KEY` | **yes** | — |
+| **Depot** | `DEPOT_BASE_URL` | **yes** | — (service origin, no `/api/v1`) |
+| | `DEPOT_API_KEY` | **yes** | — (write-scoped `mk_…` key) |
 | **Redis** (optional) | `REDIS_HOST` | no | — (omit → in-memory cache) |
 | | `REDIS_PORT` | no | `6379` |
 | | `REDIS_TTL` | no | `3600` (seconds) |
