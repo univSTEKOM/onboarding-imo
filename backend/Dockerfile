@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1.7
 # ---------------------------------------
 # Stage 1: Builder
 # ---------------------------------------
@@ -5,18 +6,26 @@ FROM oven/bun:alpine AS builder
 
 WORKDIR /usr/src/app
 
-# Copy manifests first to cache dependencies
-COPY package.json bun.lock ./
+# Copy manifests first to cache dependencies (.npmrc sets the @univstekom registry)
+COPY package.json bun.lock .npmrc ./
 
-# Install ALL dependencies (including devDeps)
-RUN bun install --frozen-lockfile
+# Install ALL dependencies (including devDeps).
+# The GitHub Packages token is mounted as a BuildKit secret, written to a
+# throwaway ~/.npmrc, and removed in the same layer so it never persists.
+RUN --mount=type=secret,id=node_auth \
+    echo "//npm.pkg.github.com/:_authToken=$(cat /run/secrets/node_auth)" >> ~/.npmrc && \
+    bun install --frozen-lockfile && \
+    rm -f ~/.npmrc
 
 # Copy source and build
 COPY . .
 RUN bun run build
 
 # Remove devDependencies to save space
-RUN bun install --production --frozen-lockfile
+RUN --mount=type=secret,id=node_auth \
+    echo "//npm.pkg.github.com/:_authToken=$(cat /run/secrets/node_auth)" >> ~/.npmrc && \
+    bun install --production --frozen-lockfile && \
+    rm -f ~/.npmrc
 
 # ---------------------------------------
 # Stage 2: Runner
