@@ -8,8 +8,6 @@ export class AddDepotFileIdToMedia1749700000000 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(
-      `ALTER TABLE "media" DROP COLUMN "depotFileId"`,
-    );
+    await queryRunner.query(`ALTER TABLE "media" DROP COLUMN "depotFileId"`);
   }
 }
