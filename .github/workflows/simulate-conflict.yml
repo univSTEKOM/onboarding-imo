@@ -1,0 +1,35 @@
+name: Simulasi perubahan tim
+on:
+  pull_request:
+    types: [opened]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  plant-conflict:
+    if: startsWith(github.head_ref, 'feat/notes-frontend')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: master
+
+      - name: Tambah permission reports (perubahan rekan tim)
+        run: |
+          sed -i "s/| 'media.read_all';/| 'media.read_all'\n  | 'reports.read';/" \
+            backend/src/auth/permissions.type.ts
+          sed -i "/{ name: 'media.read_all'/a\\    { name: 'reports.read', description: 'Read reports' }," \
+            backend/src/database/seeder/seeder.service.ts
+          git config user.name "rekan-tim-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git commit -am "feat: add reports permission"
+          git push origin master
+
+      - name: Beri tahu newbie di PR
+        run: |
+          gh pr comment ${{ github.event.pull_request.number }} \
+            --body "Heads up — master baru saja berubah. 🌊 Update branch kamu dari master (\`git fetch origin && git merge origin/master\`), selesaikan konfliknya, dan pastikan build tetap hijau. Detailnya ada di task T2b di Plane. 😉"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
