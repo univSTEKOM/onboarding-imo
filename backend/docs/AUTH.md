@@ -136,9 +136,11 @@ the email via Mailgun (see [INTEGRATIONS.md](./INTEGRATIONS.md)).
 
 `SsoModule` (`src/sso/`) lets users sign in through an external **OpenID Connect provider**
 (e.g. `passport.stekom.ac.id`). The API is a **confidential client**: it runs the
-authorization-code + PKCE flow server-side with `openid-client`, then mints this template's
-**own** session cookies — the SPA never sees the IdP tokens. It's optional: leave `SSO_ISSUER`
-unset and the routes return `503` while `SsoService.enabled` is `false`.
+authorization-code + PKCE flow server-side via the **[`@univstekom/passport-sdk`](https://github.com/univstekom/passport-sdk)**
+`PassportClient`, then mints this template's **own** session cookies — the SPA never sees the
+IdP tokens. `SsoService` is a thin wrapper that delegates the OIDC protocol to the SDK and
+keeps only the app-specific provisioning. It's optional: leave `SSO_ISSUER` unset and the
+routes return `503` while `SsoService.enabled` is `false`.
 
 ```text
 GET /api/auth/sso/login
@@ -146,7 +148,8 @@ GET /api/auth/sso/login
    ▼  302 → IdP /auth
 IdP authenticates the user, 302s back →
 GET /api/auth/sso/callback?code&state
-   │  exchange code (client_secret_basic) → verified id_token claims
+   │  exchange code (client_secret_post) → verified id_token (sub, sid)
+   │  fetch identity from UserInfo (email, name, roles) — see note below
    │  provision-or-update local user (SsoService.provisionUser)
    │  AuthService.login(user, sid) → mint tokens carrying the OIDC `sid`
    ├── access_token   → readable cookie  (the SPA decodes it client-side)
@@ -156,6 +159,10 @@ GET /api/auth/sso/callback?code&state
    ▼  302 → SSO_SUCCESS_REDIRECT (into the SPA)
 ```
 
+- **Identity from UserInfo** — the provider keeps the **ID token minimal** (`sub`, `sid`
+  only); `email`/`name`/`phone`/`roles` are released at the **UserInfo** endpoint. So
+  `SsoService.exchange` runs `PassportClient.handleCallback` (verifies the ID token) **then**
+  `PassportClient.userInfo` (fetches the identity claims) and merges them before provisioning.
 - **Provisioning** — `SsoService.provisionUser` looks up the user by email. First-time users
   are auto-created (auto-verified, random unusable password) and granted the `SSO_DEFAULT_ROLE`
   (default `user`); returning users have their name/phone refreshed. The SSO `roles`/`permissions`
@@ -170,8 +177,9 @@ GET /api/auth/sso/callback?code&state
   `GET /sso/logout` (RP-initiated): it clears the cookies and 302s through the IdP
   `session/end`. The IdP then fires back-channel logout to revoke the session everywhere.
 - **Back-channel logout & session revocation** — the IdP POSTs a signed `logout_token` to
-  `POST /sso/backchannel-logout`. `SsoService.verifyLogoutToken` verifies it (RS256 via the
-  IdP JWKS, `iss`/`aud`, the back-channel-logout event claim, no `nonce`), then
+  `POST /sso/backchannel-logout`. `SsoService.verifyLogoutToken` (delegating to the SDK)
+  verifies it (RS256 via the IdP JWKS, `iss`/`aud`, the back-channel-logout event claim, no
+  `nonce`), then
   `AuthService.revokeSession(sid)` records the `sid` in `revoked_sso_sessions`. Because our
   sessions are otherwise stateless JWTs, `JwtStrategy` (and `refresh`) reject any token whose
   `sid` is revoked — ending the session app-wide.

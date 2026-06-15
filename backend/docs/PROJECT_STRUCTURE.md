@@ -32,7 +32,7 @@ src/
 
   sso/                    # OIDC single sign-on (confidential client)
     sso.controller.ts     #   /auth/sso/* (login, callback, logout, backchannel-logout)
-    sso.service.ts        #   openid-client discovery/PKCE/exchange, user provisioning, logout_token verify
+    sso.service.ts        #   wraps @univstekom/passport-sdk (PKCE/exchange/UserInfo/logout_token) + user provisioning
 
   users/  roles/  permissions/  invitations/  media/  notifications/
     <feature>.module.ts

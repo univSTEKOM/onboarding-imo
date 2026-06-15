@@ -9,22 +9,19 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as crypto from 'crypto';
-import * as client from 'openid-client';
-import { createRemoteJWKSet, jwtVerify } from 'jose';
+import { PassportClient } from '@univstekom/passport-sdk';
 import { UsersService } from '../users/users.service';
 import { Role } from '../roles/entities/role.entity';
 import { User } from '../users/entities/user.entity';
 
 const SCOPE = 'openid email profile roles divisions offline_access';
-const BACKCHANNEL_LOGOUT_EVENT =
-  'http://schemas.openid.net/event/backchannel-logout';
 
 export interface SsoClaims {
   sub: string;
   email?: string;
   email_verified?: boolean;
-  name?: string;
-  phone_number?: string;
+  name?: string | null;
+  phone_number?: string | null;
   sid?: string;
 }
 
@@ -34,11 +31,16 @@ export interface SsoCallbackResult {
   sid?: string;
 }
 
+/**
+ * Thin wrapper over `@univstekom/passport-sdk`'s `PassportClient`. The SDK owns
+ * the OIDC protocol (discovery, PKCE, code exchange, ID-token verification,
+ * back-channel logout); this service keeps the app-specific bits — user
+ * provisioning — and preserves the method surface `SsoController` depends on.
+ */
 @Injectable()
 export class SsoService implements OnModuleInit {
   private readonly logger = new Logger(SsoService.name);
-  private config?: client.Configuration;
-  private jwks?: ReturnType<typeof createRemoteJWKSet>;
+  private client?: PassportClient;
 
   constructor(
     private readonly env: ConfigService,
@@ -65,8 +67,8 @@ export class SsoService implements OnModuleInit {
         {
           email,
           password: crypto.randomBytes(32).toString('hex'),
-          fullname: claims.name,
-          phone: claims.phone_number,
+          fullname: claims.name ?? undefined,
+          phone: claims.phone_number ?? undefined,
           roleIds: role ? [role.id] : undefined,
         },
         { autoVerify: true },
@@ -92,7 +94,7 @@ export class SsoService implements OnModuleInit {
   }
 
   get enabled(): boolean {
-    return !!this.config;
+    return !!this.client;
   }
 
   async onModuleInit(): Promise<void> {
@@ -108,15 +110,17 @@ export class SsoService implements OnModuleInit {
     }
 
     try {
-      this.config = await client.discovery(
-        new URL(issuer),
+      const client = new PassportClient({
+        issuer,
         clientId,
         clientSecret,
-        client.ClientSecretPost(clientSecret),
-      );
-      this.jwks = createRemoteJWKSet(
-        new URL(`${issuer.replace(/\/$/, '')}/jwks`),
-      );
+        redirectUri: this.env.getOrThrow<string>('SSO_REDIRECT_URI'),
+        postLogoutRedirectUri: this.env.get<string>('SSO_POST_LOGOUT_URI'),
+        scope: SCOPE,
+        tokenEndpointAuthMethod: 'client_secret_post',
+      });
+      await client.discover();
+      this.client = client;
       this.logger.log(`SSO discovery complete for issuer ${issuer}`);
     } catch (err) {
       this.logger.error(
@@ -126,11 +130,11 @@ export class SsoService implements OnModuleInit {
     }
   }
 
-  private requireConfig(): client.Configuration {
-    if (!this.config) {
+  private requireClient(): PassportClient {
+    if (!this.client) {
       throw new ServiceUnavailableException('SSO is not configured');
     }
-    return this.config;
+    return this.client;
   }
 
   async newPkce(): Promise<{
@@ -138,19 +142,19 @@ export class SsoService implements OnModuleInit {
     challenge: string;
     state: string;
   }> {
-    const verifier = client.randomPKCECodeVerifier();
-    const challenge = await client.calculatePKCECodeChallenge(verifier);
-    return { verifier, challenge, state: client.randomState() };
+    const state = await this.requireClient().createLoginState();
+    return {
+      verifier: state.codeVerifier,
+      challenge: state.codeChallenge,
+      state: state.state,
+    };
   }
 
   // `prompt: 'none'` requests a silent authorization — the IdP either returns a
   // code (an active session exists) or errors with `login_required`.
   buildAuthUrl(challenge: string, state: string, prompt?: 'none'): URL {
-    return client.buildAuthorizationUrl(this.requireConfig(), {
-      redirect_uri: this.env.getOrThrow<string>('SSO_REDIRECT_URI'),
-      scope: SCOPE,
-      code_challenge: challenge,
-      code_challenge_method: 'S256',
+    return this.requireClient().authorizationUrl({
+      codeChallenge: challenge,
       state,
       ...(prompt ? { prompt } : {}),
     });
@@ -161,55 +165,34 @@ export class SsoService implements OnModuleInit {
     verifier: string,
     state: string,
   ): Promise<SsoCallbackResult> {
-    const tokens = await client.authorizationCodeGrant(
-      this.requireConfig(),
-      currentUrl,
-      { pkceCodeVerifier: verifier, expectedState: state },
-    );
-    const claims = tokens.claims() as unknown as SsoClaims | undefined;
-    if (!claims?.email) {
+    const client = this.requireClient();
+    const result = await client.handleCallback(currentUrl, {
+      codeVerifier: verifier,
+      expectedState: state,
+    });
+
+    // The provider keeps the ID token minimal (sub + sid). Identity claims —
+    // email/name/phone_number — are released via UserInfo, so fetch them there.
+    const identity = await client.userInfo(result.accessToken);
+    const claims: SsoClaims = { ...identity, sid: result.sid };
+    if (!claims.email) {
       throw new UnauthorizedException(
-        'SSO token did not include an email claim',
+        'SSO identity did not include an email claim',
       );
     }
-    return { claims, idToken: tokens.id_token!, sid: claims.sid };
+    return { claims, idToken: result.idToken, sid: result.sid };
   }
 
   endSessionUrl(idToken: string): URL {
-    return client.buildEndSessionUrl(this.requireConfig(), {
-      id_token_hint: idToken,
-      post_logout_redirect_uri: this.env.getOrThrow<string>(
-        'SSO_POST_LOGOUT_URI',
-      ),
-    });
+    return this.requireClient().endSessionUrl({ idToken });
   }
 
-  // Verify a back-channel logout_token per the OIDC Back-Channel Logout spec:
-  // RS256 against the IdP JWKS, matching iss/aud, the backchannel-logout event
-  // claim present, and no `nonce`. Returns the targeted session id / subject.
+  // Verify a back-channel logout_token (OIDC Back-Channel Logout spec). The SDK
+  // checks the RS256 signature against the IdP JWKS, the iss/aud, the logout
+  // event claim, and the absence of a nonce. Returns the targeted session/subject.
   async verifyLogoutToken(
     logoutToken: string,
   ): Promise<{ sid?: string; sub?: string }> {
-    if (!this.config || !this.jwks) {
-      throw new ServiceUnavailableException('SSO is not configured');
-    }
-    const { payload } = await jwtVerify(logoutToken, this.jwks, {
-      issuer: this.env.getOrThrow<string>('SSO_ISSUER'),
-      audience: this.env.getOrThrow<string>('SSO_CLIENT_ID'),
-    });
-
-    const events = payload.events as Record<string, unknown> | undefined;
-    if (!events || !(BACKCHANNEL_LOGOUT_EVENT in events)) {
-      throw new UnauthorizedException('Not a back-channel logout token');
-    }
-    if ('nonce' in payload) {
-      throw new UnauthorizedException('logout_token must not contain a nonce');
-    }
-    const sid = typeof payload.sid === 'string' ? payload.sid : undefined;
-    const sub = typeof payload.sub === 'string' ? payload.sub : undefined;
-    if (!sid && !sub) {
-      throw new UnauthorizedException('logout_token missing sid and sub');
-    }
-    return { sid, sub };
+    return this.requireClient().verifyLogoutToken(logoutToken);
   }
 }

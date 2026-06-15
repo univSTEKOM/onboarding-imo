@@ -102,12 +102,15 @@ memory store. The pattern convention is `'*/users*'`, `'*/roles*'`, `'*/media*'`
 ## SSO / OIDC provider
 
 `SsoModule` (`src/sso/`) talks to an external **OpenID Connect provider** (e.g.
-`passport.stekom.ac.id`) as a confidential client, using `openid-client` for the flow and
-`jose` to verify back-channel `logout_token`s. It's **optional**: with `SSO_ISSUER` unset,
-`SsoService.onModuleInit` skips discovery and the routes report unavailable.
+`passport.stekom.ac.id`) as a confidential client through the
+**[`@univstekom/passport-sdk`](https://github.com/univstekom/passport-sdk)** `PassportClient`
+— the SDK owns the OIDC protocol (discovery, PKCE, code exchange, ID-token verification,
+back-channel `logout_token` verification); `SsoService` keeps only the user provisioning. It's
+**optional**: with `SSO_ISSUER` unset, `SsoService.onModuleInit` skips discovery and the
+routes report unavailable.
 
-- **Discovery** runs once at boot (`client.discovery`, cached); a failure is logged and
-  leaves SSO disabled rather than crashing the app.
+- **Discovery** runs once at boot (`PassportClient.discover()`, cached); a failure is logged
+  and leaves SSO disabled rather than crashing the app.
 - **Server-to-server calls** (discovery, token, JWKS) hit the IdP's `/oidc/*` machine
   endpoints. Behind Cloudflare Bot Fight Mode / a Managed Challenge these get a `403`
   challenge page — add a WAF **skip** for `/oidc/*`.

@@ -21,6 +21,7 @@
         "@nestjs/typeorm": "^11.0.1",
         "@nestjs/websockets": "^11.1.24",
         "@univstekom/depot-sdk": "^0.1.0",
+        "@univstekom/passport-sdk": "^0.1.0",
         "bcrypt": "^6.0.0",
         "cache-manager": "^5.7.6",
         "cache-manager-redis-yet": "^5.1.5",
@@ -29,11 +30,9 @@
         "cookie-parser": "^1.4.7",
         "form-data": "^4.0.5",
         "google-auth-library": "^10.6.2",
-        "jose": "^6.2.3",
         "mailgun.js": "^13.2.0",
         "multer": "^1.4.5-lts.2",
         "nestjs-pino": "^4.6.1",
-        "openid-client": "^6.8.4",
         "passport": "^0.7.0",
         "passport-jwt": "^4.0.1",
         "passport-local": "^1.0.0",
@@ -325,6 +324,8 @@
     "@typescript-eslint/visitor-keys": ["@typescript-eslint/visitor-keys@8.60.1", "", { "dependencies": { "@typescript-eslint/types": "8.60.1", "eslint-visitor-keys": "^5.0.0" } }, "sha512-EbGRQg4FhrmwLodl+t3JNAnXHWVr9Vp+Zl1QBZVPY4ByfkzIT8cX3K6QWODHtkIZqqJVEWvhHSx3v5PDHsaQag=="],
 
     "@univstekom/depot-sdk": ["@univstekom/depot-sdk@0.1.0", "https://npm.pkg.github.com/download/@univstekom/depot-sdk/0.1.0/fcec49147835c3ce167618481efb91e1410f1fe9", { "peerDependencies": { "typescript": ">=5" } }, "sha512-UHOFT+6rpX27LVSZyQQTeTVaiSma4B+EC/smcvleqfqD0rgM7Sdqva1Y5/g/FFJY7NjcA4ToEROWKBrNVYre5g=="],
+
+    "@univstekom/passport-sdk": ["@univstekom/passport-sdk@0.1.0", "https://npm.pkg.github.com/download/@univstekom/passport-sdk/0.1.0/88d69911e97d6b333b32e010edab2ac37e840964", { "dependencies": { "jose": "^5.9.6", "openid-client": "^6.8.4" }, "peerDependencies": { "typescript": ">=5" } }, "sha512-CJB0hF+mPU1Fxsa50g12513AKGbzbVHaSGhv8sIsTm/zN/YurO6/LhlhcZYe7Mn43vZQiP8gsO0NFg/NcDi1tQ=="],
 
     "@webassemblyjs/ast": ["@webassemblyjs/ast@1.14.1", "", { "dependencies": { "@webassemblyjs/helper-numbers": "1.13.2", "@webassemblyjs/helper-wasm-bytecode": "1.13.2" } }, "sha512-nuBEDgQfm1ccRp/8bCQrx1frohyufl4JlbMMZ4P1wpeOfDhF6FQkxZJ1b/e+PLwr6X1Nhw6OLme5usuBWYBvuQ=="],
 
@@ -794,7 +795,7 @@
 
     "jest-worker": ["jest-worker@27.5.1", "", { "dependencies": { "@types/node": "22.19.1", "merge-stream": "2.0.0", "supports-color": "8.1.1" } }, "sha512-7vuh85V5cdDofPyxn58nrPjBktZo0u9x1g8WtjQol+jZDaE+fhN+cIvTj11GndBnMnyfrUOG1sZQxCdjKh+DKg=="],
 
-    "jose": ["jose@6.2.3", "", {}, "sha512-YYVDInQKFJfR/xa3ojUTl8c2KoTwiL1R5Wg9YCydwH0x0B9grbzlg5HC7mMjCtUJjbQ/YnGEZIhI5tCgfTb4Hw=="],
+    "jose": ["jose@5.10.0", "", {}, "sha512-s+3Al/p9g32Iq+oqXxkW//7jk2Vig6FF1CFqzVXoTUXt2qz89YWbL+OwS17NFYEvxC35n0FKeGO2LGYSxeM2Gg=="],
 
     "joycon": ["joycon@3.1.1", "", {}, "sha512-34wB/Y7MW7bzjKRjUKTa46I2Z7eV62Rkhva+KkopW7Qvv/OSWBqvkSY7vusOPrNuZcUG3tApvdVgNB8POj3SPw=="],
 
@@ -1425,6 +1426,8 @@
     "micromatch/picomatch": ["picomatch@2.3.1", "", {}, "sha512-JU3teHTNjmE2VCGFzuY8EXzCDVwEqB2a8fsIvwaStHhAWJEeVd1o1QD80CU6+ZdEXXSLbSsuLwJjkCBWqRQUVA=="],
 
     "node-emoji/lodash": ["lodash@4.17.21", "", {}, "sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg=="],
+
+    "openid-client/jose": ["jose@6.2.3", "", {}, "sha512-YYVDInQKFJfR/xa3ojUTl8c2KoTwiL1R5Wg9YCydwH0x0B9grbzlg5HC7mMjCtUJjbQ/YnGEZIhI5tCgfTb4Hw=="],
 
     "path-scurry/lru-cache": ["lru-cache@11.2.4", "", {}, "sha512-B5Y16Jr9LB9dHVkh6ZevG+vAbOsNOYCX+sXvFWFu7B3Iz5mijW3zdbMyhsh8ANd2mSWBYdJgnqi+mL7/LrOPYg=="],
 
