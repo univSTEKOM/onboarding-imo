@@ -112,7 +112,7 @@ export class SsoService implements OnModuleInit {
         new URL(issuer),
         clientId,
         clientSecret,
-        client.ClientSecretBasic(clientSecret),
+        client.ClientSecretPost(clientSecret),
       );
       this.jwks = createRemoteJWKSet(
         new URL(`${issuer.replace(/\/$/, '')}/jwks`),
