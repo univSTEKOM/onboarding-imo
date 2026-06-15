@@ -20,7 +20,7 @@
         "@nestjs/throttler": "^6.5.0",
         "@nestjs/typeorm": "^11.0.1",
         "@nestjs/websockets": "^11.1.24",
-        "@univstekom/depot-sdk": "^0.1.0",
+        "@univstekom/depot-sdk": "^0.1.2",
         "@univstekom/passport-sdk": "^0.1.0",
         "bcrypt": "^6.0.0",
         "cache-manager": "^5.7.6",
@@ -323,7 +323,7 @@
 
     "@typescript-eslint/visitor-keys": ["@typescript-eslint/visitor-keys@8.60.1", "", { "dependencies": { "@typescript-eslint/types": "8.60.1", "eslint-visitor-keys": "^5.0.0" } }, "sha512-EbGRQg4FhrmwLodl+t3JNAnXHWVr9Vp+Zl1QBZVPY4ByfkzIT8cX3K6QWODHtkIZqqJVEWvhHSx3v5PDHsaQag=="],
 
-    "@univstekom/depot-sdk": ["@univstekom/depot-sdk@0.1.0", "https://npm.pkg.github.com/download/@univstekom/depot-sdk/0.1.0/fcec49147835c3ce167618481efb91e1410f1fe9", { "peerDependencies": { "typescript": ">=5" } }, "sha512-UHOFT+6rpX27LVSZyQQTeTVaiSma4B+EC/smcvleqfqD0rgM7Sdqva1Y5/g/FFJY7NjcA4ToEROWKBrNVYre5g=="],
+    "@univstekom/depot-sdk": ["@univstekom/depot-sdk@0.1.2", "https://npm.pkg.github.com/download/@univstekom/depot-sdk/0.1.2/a11a4adfe994a1a03c6de8cfc2b816b71319a502", { "peerDependencies": { "typescript": ">=5" } }, "sha512-RUs71KTETirAx7GBIfs1/oCMSSVVxiVGcNSWHRNnUoU3VSoRMwY9IsZQQFVg8O6pFAive0S7NM1QVH0I+kjmFA=="],
 
     "@univstekom/passport-sdk": ["@univstekom/passport-sdk@0.1.0", "https://npm.pkg.github.com/download/@univstekom/passport-sdk/0.1.0/88d69911e97d6b333b32e010edab2ac37e840964", { "dependencies": { "jose": "^5.9.6", "openid-client": "^6.8.4" }, "peerDependencies": { "typescript": ">=5" } }, "sha512-CJB0hF+mPU1Fxsa50g12513AKGbzbVHaSGhv8sIsTm/zN/YurO6/LhlhcZYe7Mn43vZQiP8gsO0NFg/NcDi1tQ=="],
 
