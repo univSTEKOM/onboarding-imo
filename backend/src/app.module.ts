@@ -1,3 +1,4 @@
+import { NotesModule } from './notes/notes.module';
 import { randomUUID } from 'crypto';
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
@@ -136,6 +137,7 @@ const initLogger = pino({ name: 'AppModule' });
     NotificationsModule,
     MailModule,
     HealthModule,
+    NotesModule,
   ],
   controllers: [AppController],
   providers: [
