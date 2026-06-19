@@ -153,4 +153,18 @@ export class NotificationsListener {
       link: `/profile`,
     });
   }
+
+  // ─── Note Events ─────────────────────────────────────────────────────────────
+  @OnEvent('note.created')
+  async handleNoteCreated(payload: { note: { title: string }; actorId?: number }) {
+    await this.notifyAdmins(
+      {
+        title: 'Catatan Baru Dibuat',
+        message: `Catatan baru telah dibuat: "${payload.note.title}"`,
+        type: NotificationType.INFO,
+        link: `/notes`,
+      },
+      payload.actorId,
+    );
+  }
 }
