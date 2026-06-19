@@ -14,6 +14,7 @@ import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as usersUsersRouteImport } from './routes/(users)/users'
 import { Route as usersInvitationsRouteImport } from './routes/(users)/invitations'
+import { Route as notesNotesRouteImport } from './routes/(notes)/notes'
 import { Route as mediaMediaRouteImport } from './routes/(media)/media'
 import { Route as contentNotificationsRouteImport } from './routes/(content)/notifications'
 import { Route as authVerifyEmailRouteImport } from './routes/(auth)/verify-email'
@@ -47,6 +48,11 @@ const usersUsersRoute = usersUsersRouteImport.update({
 const usersInvitationsRoute = usersInvitationsRouteImport.update({
   id: '/(users)/invitations',
   path: '/invitations',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const notesNotesRoute = notesNotesRouteImport.update({
+  id: '/(notes)/notes',
+  path: '/notes',
   getParentRoute: () => rootRouteImport,
 } as any)
 const mediaMediaRoute = mediaMediaRouteImport.update({
@@ -107,6 +113,7 @@ export interface FileRoutesByFullPath {
   '/verify-email': typeof authVerifyEmailRoute
   '/notifications': typeof contentNotificationsRoute
   '/media': typeof mediaMediaRoute
+  '/notes': typeof notesNotesRoute
   '/invitations': typeof usersInvitationsRoute
   '/users': typeof usersUsersRoute
   '/permissions': typeof databasespermissionsPermissionsRoute
@@ -123,6 +130,7 @@ export interface FileRoutesByTo {
   '/verify-email': typeof authVerifyEmailRoute
   '/notifications': typeof contentNotificationsRoute
   '/media': typeof mediaMediaRoute
+  '/notes': typeof notesNotesRoute
   '/invitations': typeof usersInvitationsRoute
   '/users': typeof usersUsersRoute
   '/permissions': typeof databasespermissionsPermissionsRoute
@@ -140,6 +148,7 @@ export interface FileRoutesById {
   '/(auth)/verify-email': typeof authVerifyEmailRoute
   '/(content)/notifications': typeof contentNotificationsRoute
   '/(media)/media': typeof mediaMediaRoute
+  '/(notes)/notes': typeof notesNotesRoute
   '/(users)/invitations': typeof usersInvitationsRoute
   '/(users)/users': typeof usersUsersRoute
   '/(databases)/(permissions)/permissions': typeof databasespermissionsPermissionsRoute
@@ -158,6 +167,7 @@ export interface FileRouteTypes {
     | '/verify-email'
     | '/notifications'
     | '/media'
+    | '/notes'
     | '/invitations'
     | '/users'
     | '/permissions'
@@ -174,6 +184,7 @@ export interface FileRouteTypes {
     | '/verify-email'
     | '/notifications'
     | '/media'
+    | '/notes'
     | '/invitations'
     | '/users'
     | '/permissions'
@@ -190,6 +201,7 @@ export interface FileRouteTypes {
     | '/(auth)/verify-email'
     | '/(content)/notifications'
     | '/(media)/media'
+    | '/(notes)/notes'
     | '/(users)/invitations'
     | '/(users)/users'
     | '/(databases)/(permissions)/permissions'
@@ -207,6 +219,7 @@ export interface RootRouteChildren {
   authVerifyEmailRoute: typeof authVerifyEmailRoute
   contentNotificationsRoute: typeof contentNotificationsRoute
   mediaMediaRoute: typeof mediaMediaRoute
+  notesNotesRoute: typeof notesNotesRoute
   usersInvitationsRoute: typeof usersInvitationsRoute
   usersUsersRoute: typeof usersUsersRoute
   databasespermissionsPermissionsRoute: typeof databasespermissionsPermissionsRoute
@@ -248,6 +261,13 @@ declare module '@tanstack/react-router' {
       path: '/invitations'
       fullPath: '/invitations'
       preLoaderRoute: typeof usersInvitationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(notes)/notes': {
+      id: '/(notes)/notes'
+      path: '/notes'
+      fullPath: '/notes'
+      preLoaderRoute: typeof notesNotesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/(media)/media': {
@@ -327,6 +347,7 @@ const rootRouteChildren: RootRouteChildren = {
   authVerifyEmailRoute: authVerifyEmailRoute,
   contentNotificationsRoute: contentNotificationsRoute,
   mediaMediaRoute: mediaMediaRoute,
+  notesNotesRoute: notesNotesRoute,
   usersInvitationsRoute: usersInvitationsRoute,
   usersUsersRoute: usersUsersRoute,
   databasespermissionsPermissionsRoute: databasespermissionsPermissionsRoute,
